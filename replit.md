@@ -112,7 +112,8 @@ This is a logistics management system designed for Kazakhstan, built as a full-s
 ## Changelog
 
 Changelog:
-- June 27, 2025. Initial setup
+- June 27, 2025. Initial setup - Created multi-role transportation registry system
+- June 27, 2025. User role updated to генеральный директор for full system access
 
 ## User Preferences
 
