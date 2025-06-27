@@ -45,11 +45,11 @@ export const transportationRequests = pgTable("transportation_requests", {
   fromCity: varchar("from_city").notNull(),
   toCity: varchar("to_city").notNull(),
   cargoType: varchar("cargo_type").notNull(),
-  weight: decimal("weight", { precision: 10, scale: 2 }).notNull(),
+  weight: varchar("weight").notNull(),
   description: text("description"),
   
   // Logistics information (filled by Логист)
-  estimatedCost: decimal("estimated_cost", { precision: 12, scale: 2 }),
+  estimatedCost: varchar("estimated_cost"),
   transportType: varchar("transport_type"), // truck, trailer, special
   urgency: varchar("urgency").default("normal"), // normal, urgent, express
   carrier: varchar("carrier"),

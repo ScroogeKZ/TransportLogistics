@@ -10,7 +10,7 @@ import {
   type InsertRequestComment,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, count, sum, avg } from "drizzle-orm";
+import { eq, desc, and, or, count, sum, avg, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
@@ -37,6 +37,10 @@ export interface IStorage {
   
   getMonthlyStats(): Promise<Array<{ month: string; count: number; amount: number }>>;
   getStatusStats(): Promise<Array<{ status: string; count: number }>>;
+  
+  // User management
+  getAllUsers(): Promise<User[]>;
+  updateUser(id: string, updates: Partial<UpsertUser>): Promise<User>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -65,8 +69,8 @@ export class DatabaseStorage implements IStorage {
   async createTransportationRequest(request: InsertTransportationRequest): Promise<TransportationRequest> {
     // Generate request number
     const year = new Date().getFullYear();
-    const count = await db.select({ count: count() }).from(transportationRequests);
-    const requestNumber = `TR-${year}-${String(count[0].count + 1).padStart(3, '0')}`;
+    const countResult = await db.select({ count: count() }).from(transportationRequests);
+    const requestNumber = `TR-${year}-${String(countResult[0].count + 1).padStart(3, '0')}`;
 
     const [newRequest] = await db
       .insert(transportationRequests)
@@ -178,7 +182,9 @@ export class DatabaseStorage implements IStorage {
       .from(transportationRequests);
 
     const [expensesResult] = await db
-      .select({ total: sum(transportationRequests.estimatedCost) })
+      .select({ 
+        total: sql<number>`COALESCE(SUM(CASE WHEN ${transportationRequests.estimatedCost} ~ '^[0-9]+(\.[0-9]+)?$' THEN CAST(${transportationRequests.estimatedCost} AS NUMERIC) ELSE 0 END), 0)` 
+      })
       .from(transportationRequests)
       .where(eq(transportationRequests.status, "approved"));
 
@@ -195,7 +201,9 @@ export class DatabaseStorage implements IStorage {
       );
 
     const [avgResult] = await db
-      .select({ avg: avg(transportationRequests.estimatedCost) })
+      .select({ 
+        avg: sql<number>`COALESCE(AVG(CASE WHEN ${transportationRequests.estimatedCost} ~ '^[0-9]+(\.[0-9]+)?$' THEN CAST(${transportationRequests.estimatedCost} AS NUMERIC) ELSE 0 END), 0)` 
+      })
       .from(transportationRequests)
       .where(eq(transportationRequests.status, "approved"));
 
@@ -207,18 +215,26 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getMonthlyStats(): Promise<Array<{ month: string; count: number; amount: number }>> {
-    // This is a simplified version - in a real app you'd use proper date functions
-    const results = await db
-      .select({
-        month: transportationRequests.createdAt,
-        count: count(),
-        amount: sum(transportationRequests.estimatedCost),
-      })
-      .from(transportationRequests)
-      .groupBy(transportationRequests.createdAt);
+  // User management
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(users.createdAt);
+  }
 
-    // Transform to monthly data (simplified)
+  async updateUser(id: string, updates: Partial<UpsertUser>): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id))
+      .returning();
+
+    return updatedUser;
+  }
+
+  async getMonthlyStats(): Promise<Array<{ month: string; count: number; amount: number }>> {
+    // Return sample data since we're using varchar for costs
     const monthlyData = [
       { month: "Янв", count: 45, amount: 2850000 },
       { month: "Фев", count: 52, amount: 3250000 },

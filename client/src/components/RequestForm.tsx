@@ -29,9 +29,16 @@ import { insertTransportationRequestSchema } from "@shared/schema";
 import { cities, cargoTypes, transportTypes, urgencyLevels, carriers } from "@/lib/i18n";
 import { z } from "zod";
 
-const formSchema = insertTransportationRequestSchema.extend({
-  weight: z.string().min(1, "Вес обязателен"),
+const formSchema = z.object({
+  fromCity: z.string().min(1, "Выберите город отправления"),
+  toCity: z.string().min(1, "Выберите город назначения"),
+  cargoType: z.string().min(1, "Выберите тип груза"),
+  weight: z.string().min(1, "Введите вес груза"),
+  description: z.string().optional(),
   estimatedCost: z.string().optional(),
+  transportType: z.string().optional(),
+  urgency: z.string().default("normal"),
+  carrier: z.string().optional(),
 });
 
 export default function RequestForm() {
@@ -82,10 +89,11 @@ export default function RequestForm() {
   });
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
+    console.log("Form data:", data);
     createRequestMutation.mutate(data);
   };
 
-  const canEditLogistics = user?.role !== "прораб";
+  const canEditLogistics = (user as any)?.role !== "прораб";
 
   return (
     <Card>
@@ -246,7 +254,7 @@ export default function RequestForm() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("transport_type")}</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Выберите тип" />
@@ -271,7 +279,7 @@ export default function RequestForm() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("urgency")}</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue />
@@ -298,7 +306,7 @@ export default function RequestForm() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("carrier")}</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Выберите перевозчика" />
@@ -321,7 +329,7 @@ export default function RequestForm() {
             )}
 
             <div className="flex justify-end space-x-4 pt-6">
-              <Button type="button" variant="outline">
+              <Button type="button" variant="outline" onClick={() => window.history.back()}>
                 {t("cancel")}
               </Button>
               <Button

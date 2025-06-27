@@ -68,7 +68,7 @@ export default function Layout({ children }: LayoutProps) {
   ];
 
   const visibleNavigation = navigation.filter(
-    (item) => !item.roles || item.roles.includes(user.role)
+    (item) => !item.roles || item.roles.includes((user as any)?.role)
   );
 
   const languageFlags: Record<Language, string> = {
@@ -119,14 +119,14 @@ export default function Layout({ children }: LayoutProps) {
             <div className="flex items-center space-x-3">
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-900">
-                  {user.firstName || user.email || "Пользователь"}
+                  {(user as any)?.firstName || (user as any)?.email || "Пользователь"}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {t(user.role)}
+                  {t((user as any)?.role)}
                 </p>
               </div>
               <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-medium">
-                {(user.firstName?.[0] || user.email?.[0] || "П").toUpperCase()}
+                {((user as any)?.firstName?.[0] || (user as any)?.email?.[0] || "П").toUpperCase()}
               </div>
             </div>
 
@@ -151,8 +151,8 @@ export default function Layout({ children }: LayoutProps) {
                 const Icon = item.icon;
                 return (
                   <Link key={item.name} href={item.href}>
-                    <a
-                      className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                    <div
+                      className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors cursor-pointer ${
                         item.current
                           ? "bg-primary text-white"
                           : "text-gray-700 hover:bg-gray-100"
@@ -160,7 +160,7 @@ export default function Layout({ children }: LayoutProps) {
                     >
                       <Icon className="w-5 h-5" />
                       <span>{item.name}</span>
-                    </a>
+                    </div>
                   </Link>
                 );
               })}
