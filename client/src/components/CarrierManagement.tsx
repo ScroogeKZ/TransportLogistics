@@ -1,0 +1,386 @@
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLanguage } from "@/hooks/useLanguage";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Building2, UserPlus, Edit, Phone, Mail, MapPin, Truck, Star } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+interface Carrier {
+  id: string;
+  name: string;
+  contactPerson: string;
+  phone: string;
+  email: string;
+  address: string;
+  transportTypes: string[];
+  rating: number;
+  priceRange: string;
+  notes: string;
+}
+
+const carrierSchema = z.object({
+  name: z.string().min(1, "Название компании обязательно"),
+  contactPerson: z.string().min(1, "Контактное лицо обязательно"),
+  phone: z.string().min(1, "Телефон обязателен"),
+  email: z.string().email("Неверный email").optional(),
+  address: z.string().min(1, "Адрес обязателен"),
+  transportTypes: z.array(z.string()).min(1, "Выберите хотя бы один тип транспорта"),
+  rating: z.number().min(1).max(5),
+  priceRange: z.string().min(1, "Укажите ценовой диапазон"),
+  notes: z.string().optional(),
+});
+
+const transportTypes = [
+  "Грузовик",
+  "Полуприцеп",
+  "Рефрижератор",
+  "Тентованный",
+  "Открытый",
+  "Специальный",
+];
+
+const mockCarriers: Carrier[] = [
+  {
+    id: "1",
+    name: "КазТранс ЛТД",
+    contactPerson: "Иванов Иван Иванович",
+    phone: "+7 (777) 123-45-67",
+    email: "info@kaztrans.kz",
+    address: "Алматы, ул. Абая, 123",
+    transportTypes: ["Грузовик", "Полуприцеп"],
+    rating: 5,
+    priceRange: "150-300 тенге/км",
+    notes: "Надежный партнер, работаем 3 года",
+  },
+  {
+    id: "2",
+    name: "Степь Логистик",
+    contactPerson: "Петров Петр Петрович",
+    phone: "+7 (777) 234-56-78",
+    email: "manager@steplogistic.kz",
+    address: "Астана, проспект Мангилик Ел, 45",
+    transportTypes: ["Рефрижератор", "Тентованный"],
+    rating: 4,
+    priceRange: "200-400 тенге/км",
+    notes: "Специализируются на перевозке продуктов",
+  },
+];
+
+export default function CarrierManagement() {
+  const { t } = useLanguage();
+  const { toast } = useToast();
+  const [selectedCarrier, setSelectedCarrier] = useState<Carrier | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const form = useForm<z.infer<typeof carrierSchema>>({
+    resolver: zodResolver(carrierSchema),
+    defaultValues: {
+      name: "",
+      contactPerson: "",
+      phone: "",
+      email: "",
+      address: "",
+      transportTypes: [],
+      rating: 5,
+      priceRange: "",
+      notes: "",
+    },
+  });
+
+  const carriers = mockCarriers.filter(carrier =>
+    carrier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    carrier.contactPerson.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const onSubmit = (data: z.infer<typeof carrierSchema>) => {
+    toast({
+      title: "Перевозчик добавлен",
+      description: `${data.name} успешно добавлен в базу данных`,
+    });
+    setModalOpen(false);
+    form.reset();
+  };
+
+  const getRatingStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star
+        key={i}
+        className={`w-4 h-4 ${
+          i < rating ? "text-yellow-400 fill-current" : "text-gray-300"
+        }`}
+      />
+    ));
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Управление перевозчиками</h1>
+          <p className="text-gray-600 mt-1">
+            База данных транспортных компаний и перевозчиков
+          </p>
+        </div>
+        <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <UserPlus className="w-4 h-4 mr-2" />
+              Добавить перевозчика
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Добавить нового перевозчика</DialogTitle>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Название компании</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="contactPerson"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Контактное лицо</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Телефон</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Адрес</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="rating"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Рейтинг (1-5)</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="1">1 звезда</SelectItem>
+                            <SelectItem value="2">2 звезды</SelectItem>
+                            <SelectItem value="3">3 звезды</SelectItem>
+                            <SelectItem value="4">4 звезды</SelectItem>
+                            <SelectItem value="5">5 звезд</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="priceRange"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ценовой диапазон</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="150-300 тенге/км" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Примечания</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex justify-end space-x-2">
+                  <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
+                    Отмена
+                  </Button>
+                  <Button type="submit">Добавить</Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="flex gap-4 items-center">
+        <Input
+          placeholder="Поиск по названию или контактному лицу..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-md"
+        />
+      </div>
+
+      <div className="grid gap-4">
+        {carriers.map((carrier) => (
+          <Card key={carrier.id}>
+            <CardContent className="p-6">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <div className="flex items-center gap-4 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {carrier.name}
+                    </h3>
+                    <div className="flex items-center gap-1">
+                      {getRatingStars(carrier.rating)}
+                      <span className="text-sm text-gray-600 ml-1">
+                        ({carrier.rating}/5)
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Phone className="w-4 h-4" />
+                      {carrier.phone}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Mail className="w-4 h-4" />
+                      {carrier.email}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <MapPin className="w-4 h-4" />
+                      {carrier.address}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Building2 className="w-4 h-4" />
+                      {carrier.contactPerson}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 mb-2">
+                    <Truck className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm text-gray-600">Типы транспорта:</span>
+                    <div className="flex gap-1">
+                      {carrier.transportTypes.map((type) => (
+                        <Badge key={type} variant="secondary" className="text-xs">
+                          {type}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 text-sm">
+                    <span className="font-medium text-green-600">
+                      {carrier.priceRange}
+                    </span>
+                    {carrier.notes && (
+                      <span className="text-gray-600">
+                        {carrier.notes}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline">
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm">
+                    Связаться
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}

@@ -18,6 +18,10 @@ import {
   Users,
   Download,
   LogOut,
+  Building2,
+  Route,
+  Calculator,
+  MapPin,
 } from "lucide-react";
 
 interface LayoutProps {
@@ -50,6 +54,34 @@ export default function Layout({ children }: LayoutProps) {
       icon: Plus,
       current: location === "/create",
       roles: ["прораб", "логист", "руководитель", "финансовый", "генеральный"],
+    },
+    {
+      name: "Перевозчики",
+      href: "/carriers",
+      icon: Building2,
+      current: location === "/carriers",
+      roles: ["логист", "руководитель", "финансовый", "генеральный"],
+    },
+    {
+      name: "Маршруты",
+      href: "/routes",
+      icon: Route,
+      current: location === "/routes",
+      roles: ["логист", "руководитель", "финансовый", "генеральный"],
+    },
+    {
+      name: "Калькулятор",
+      href: "/calculator",
+      icon: Calculator,
+      current: location === "/calculator",
+      roles: ["логист", "руководитель", "финансовый", "генеральный"],
+    },
+    {
+      name: "Отслеживание",
+      href: "/tracking",
+      icon: MapPin,
+      current: location === "/tracking",
+      roles: ["логист", "руководитель", "финансовый", "генеральный"],
     },
     {
       name: t("reports"),

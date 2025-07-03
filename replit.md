@@ -114,6 +114,11 @@ This is a logistics management system designed for Kazakhstan, built as a full-s
 Changelog:
 - June 27, 2025. Initial setup - Created multi-role transportation registry system
 - June 27, 2025. User role updated to генеральный директор for full system access
+- January 3, 2025. Added logistics management tools:
+  - Carrier Management: Database of transport companies with ratings and contact info
+  - Route Optimization: Route planning and optimization tools
+  - Cost Calculator: Transportation cost calculation with detailed breakdown
+  - Tracking System: Real-time shipment tracking and monitoring
 
 ## User Preferences
 
