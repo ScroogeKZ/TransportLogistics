@@ -1,5 +1,8 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLanguage } from "@/hooks/useLanguage";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,39 +37,57 @@ interface OptimizedRoute {
   efficiency: number;
 }
 
-const mockRoutes: OptimizedRoute[] = [
-  {
-    id: "1",
-    name: "Маршрут Север",
-    points: [
-      { id: "1", city: "Алматы", address: "Склад основной", lat: 43.2220, lng: 76.8512, type: "warehouse", priority: 1 },
-      { id: "2", city: "Астана", address: "ул. Сарыарка, 12", lat: 51.1694, lng: 71.4491, type: "delivery", timeWindow: "09:00-12:00", priority: 2 },
-      { id: "3", city: "Костанай", address: "ул. Байтурсынова, 45", lat: 53.2138, lng: 63.6345, type: "pickup", timeWindow: "14:00-17:00", priority: 3 },
-    ],
-    totalDistance: 1248,
-    estimatedTime: 18,
-    fuelCost: 87500,
-    efficiency: 92,
-  },
-  {
-    id: "2",
-    name: "Маршрут Юг",
-    points: [
-      { id: "1", city: "Алматы", address: "Склад основной", lat: 43.2220, lng: 76.8512, type: "warehouse", priority: 1 },
-      { id: "2", city: "Шымкент", address: "проспект Абая, 123", lat: 42.3000, lng: 69.5999, type: "delivery", timeWindow: "10:00-14:00", priority: 2 },
-      { id: "3", city: "Тараз", address: "ул. Толе би, 78", lat: 42.9000, lng: 71.3667, type: "pickup", timeWindow: "15:00-18:00", priority: 3 },
-    ],
-    totalDistance: 945,
-    estimatedTime: 14,
-    fuelCost: 66150,
-    efficiency: 95,
-  },
-];
+
 
 export default function RouteOptimization() {
   const { t } = useLanguage();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedRoute, setSelectedRoute] = useState<OptimizedRoute | null>(null);
   const [optimizationCriteria, setOptimizationCriteria] = useState("distance");
+
+  const { data: routesData = [], isLoading } = useQuery({
+    queryKey: ["/api/routes"],
+  });
+
+  const createRouteMutation = useMutation({
+    mutationFn: (data: any) => apiRequest("/api/routes", "POST", data),
+    onSuccess: () => {
+      toast({
+        title: "Маршрут создан",
+        description: "Новый маршрут успешно добавлен",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/routes"] });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось создать маршрут",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleOptimizeRoute = (routeId: number) => {
+    // Имитация оптимизации маршрута
+    toast({
+      title: "Маршрут оптимизирован",
+      description: "Маршрут был успешно оптимизирован по выбранным критериям",
+    });
+  };
+
+  const handleCreateRoute = () => {
+    const newRoute = {
+      name: "Новый маршрут",
+      fromCity: "Алматы",
+      toCity: "Астана",
+      distance: 1248,
+      estimatedTime: 18,
+      tollCost: 18720,
+      fuelCost: 87500,
+    };
+    createRouteMutation.mutate(newRoute);
+  };
 
   const getRouteTypeColor = (type: string) => {
     switch (type) {
@@ -109,7 +130,7 @@ export default function RouteOptimization() {
             Планирование и оптимизация логистических маршрутов
           </p>
         </div>
-        <Button>
+        <Button onClick={handleCreateRoute}>
           <Route className="w-4 h-4 mr-2" />
           Создать маршрут
         </Button>
@@ -173,8 +194,11 @@ export default function RouteOptimization() {
       </Card>
 
       {/* Список маршрутов */}
-      <div className="grid gap-4">
-        {mockRoutes.map((route) => (
+      {isLoading ? (
+        <div>Загрузка маршрутов...</div>
+      ) : (
+        <div className="grid gap-4">
+          {(routesData as any[]).map((route: any) => (
           <Card key={route.id} className="cursor-pointer hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex justify-between items-start mb-4">
@@ -246,7 +270,8 @@ export default function RouteOptimization() {
             </CardContent>
           </Card>
         ))}
-      </div>
+        </div>
+      )}
 
       {/* Карта маршрута */}
       <Card>

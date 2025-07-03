@@ -104,6 +104,44 @@ export default function CarrierManagement() {
     },
   });
 
+  const updateCarrierMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<z.infer<typeof carrierSchema>> }) =>
+      apiRequest(`/api/carriers/${id}`, "PATCH", data),
+    onSuccess: () => {
+      toast({
+        title: "Перевозчик обновлен",
+        description: "Информация о перевозчике успешно обновлена",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/carriers"] });
+      setSelectedCarrier(null);
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить перевозчика",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteCarrierMutation = useMutation({
+    mutationFn: (id: number) => apiRequest(`/api/carriers/${id}`, "DELETE"),
+    onSuccess: () => {
+      toast({
+        title: "Перевозчик удален",
+        description: "Перевозчик успешно удален из базы данных",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/carriers"] });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить перевозчика",
+        variant: "destructive",
+      });
+    },
+  });
+
   const form = useForm<z.infer<typeof carrierSchema>>({
     resolver: zodResolver(carrierSchema),
     defaultValues: {
@@ -125,7 +163,37 @@ export default function CarrierManagement() {
   );
 
   const onSubmit = (data: z.infer<typeof carrierSchema>) => {
-    createCarrierMutation.mutate(data);
+    if (selectedCarrier) {
+      updateCarrierMutation.mutate({ id: selectedCarrier.id, data });
+    } else {
+      createCarrierMutation.mutate(data);
+    }
+  };
+
+  const handleEdit = (carrier: Carrier) => {
+    setSelectedCarrier(carrier);
+    form.reset({
+      name: carrier.name,
+      contactPerson: carrier.contactPerson,
+      phone: carrier.phone,
+      email: carrier.email || "",
+      address: carrier.address,
+      transportTypes: carrier.transportTypes || [],
+      rating: carrier.rating,
+      priceRange: carrier.priceRange || "",
+      notes: carrier.notes || "",
+    });
+    setModalOpen(true);
+  };
+
+  const handleCall = (phone: string) => {
+    window.open(`tel:${phone}`, '_self');
+  };
+
+  const handleDelete = (id: number) => {
+    if (confirm("Вы уверены, что хотите удалить этого перевозчика?")) {
+      deleteCarrierMutation.mutate(id);
+    }
   };
 
   if (isLoading) {
@@ -152,7 +220,13 @@ export default function CarrierManagement() {
             База данных транспортных компаний и перевозчиков
           </p>
         </div>
-        <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <Dialog open={modalOpen} onOpenChange={(open) => {
+          setModalOpen(open);
+          if (!open) {
+            setSelectedCarrier(null);
+            form.reset();
+          }
+        }}>
           <DialogTrigger asChild>
             <Button>
               <UserPlus className="w-4 h-4 mr-2" />
@@ -161,7 +235,9 @@ export default function CarrierManagement() {
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Добавить нового перевозчика</DialogTitle>
+              <DialogTitle>
+                {selectedCarrier ? "Редактировать перевозчика" : "Добавить нового перевозчика"}
+              </DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -369,11 +445,14 @@ export default function CarrierManagement() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline">
+                  <Button size="sm" variant="outline" onClick={() => handleEdit(carrier)}>
                     <Edit className="w-4 h-4" />
                   </Button>
-                  <Button size="sm">
-                    Связаться
+                  <Button size="sm" onClick={() => handleCall(carrier.phone)}>
+                    Позвонить
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={() => handleDelete(carrier.id)}>
+                    Удалить
                   </Button>
                 </div>
               </div>
