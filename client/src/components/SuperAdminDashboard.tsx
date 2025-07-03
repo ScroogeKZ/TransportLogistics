@@ -27,7 +27,7 @@ const roleOptions = [
   { value: "руководитель", label: "Руководитель СМТ" },
   { value: "финансовый", label: "Финансовый директор" },
   { value: "генеральный", label: "Генеральный директор" },
-  { value: "супер_админ", label: "Супер Админ" },
+  { value: "супер_юзер", label: "Супер Юзер" },
 ];
 
 export default function SuperAdminDashboard() {
@@ -73,12 +73,12 @@ export default function SuperAdminDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Супер Админ Панель</h1>
+          <h1 className="text-3xl font-bold">Супер Юзер Панель</h1>
           <p className="text-gray-600">Полное управление системой</p>
         </div>
         <div className="flex items-center space-x-2">
           <Shield className="w-6 h-6 text-red-500" />
-          <span className="text-sm font-medium text-red-500">Супер Админ</span>
+          <span className="text-sm font-medium text-red-500">Супер Юзер</span>
         </div>
       </div>
 
@@ -166,7 +166,7 @@ export default function SuperAdminDashboard() {
                       <TableCell>{user.firstName}</TableCell>
                       <TableCell>{user.lastName}</TableCell>
                       <TableCell>
-                        <Badge variant={user.role === 'супер_админ' ? 'destructive' : 'secondary'}>
+                        <Badge variant={user.role === 'супер_юзер' ? 'destructive' : 'secondary'}>
                           {getRoleLabel(user.role)}
                         </Badge>
                       </TableCell>

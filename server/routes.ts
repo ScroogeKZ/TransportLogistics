@@ -383,8 +383,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         includes: ["генеральный", "супер_админ"].includes(user?.role || "")
       });
       
-      // Allow access for генеральный and супер_админ roles
-      const allowedRoles = ["генеральный", "супер_админ"];
+      // Allow access for генеральный and супер_юзер roles
+      const allowedRoles = ["генеральный", "супер_юзер"];
       const hasAccess = user && allowedRoles.some(role => user.role === role);
       
       if (!hasAccess) {
@@ -405,7 +405,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (!user || user.role !== "супер_админ") {
+      if (!user || user.role !== "супер_юзер") {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -430,7 +430,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (!user || user.role !== "супер_админ") {
+      if (!user || user.role !== "супер_юзер") {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -450,7 +450,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (!user || user.role !== "супер_админ") {
+      if (!user || user.role !== "супер_юзер") {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -479,8 +479,8 @@ function checkEditPermission(
   requestCreatedById: string,
   userId: string
 ): boolean {
-  // Генеральный директор and супер_админ can edit everything
-  if (userRole === "генеральный" || userRole === "супер_админ") return true;
+  // Генеральный директор and супер_юзер can edit everything
+  if (userRole === "генеральный" || userRole === "супер_юзер") return true;
 
   // Прораб can only edit their own requests if still in created status
   if (userRole === "прораб") {

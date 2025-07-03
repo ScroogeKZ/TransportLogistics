@@ -98,11 +98,11 @@ export default function Layout({ children }: LayoutProps) {
       roles: ["генеральный"],
     },
     {
-      name: "Супер Админ",
+      name: "Супер Юзер",
       href: "/super-admin",
       icon: Users,
       current: location === "/super-admin",
-      roles: ["супер_админ"],
+      roles: ["супер_юзер"],
     },
   ];
 
