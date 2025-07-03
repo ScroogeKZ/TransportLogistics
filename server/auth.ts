@@ -41,7 +41,7 @@ const registerSchema = z.object({
   password: z.string().min(6),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
-  role: z.string().min(1),
+  role: z.string().min(1).optional(),
 });
 
 export function setupAuth(app: Express) {
@@ -88,7 +88,7 @@ export function setupAuth(app: Express) {
         password: hashedPassword,
         firstName: validatedData.firstName,
         lastName: validatedData.lastName,
-        role: validatedData.role,
+        role: validatedData.role || "прораб", // Default role if not provided
       });
 
       // Create session

@@ -12,7 +12,7 @@ interface RegisterData {
   password: string;
   firstName: string;
   lastName: string;
-  role: string;
+  role?: string;
 }
 
 export function useAuth() {

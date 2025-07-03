@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,7 +23,6 @@ const registerSchema = z.object({
   password: z.string().min(6, "Пароль должен содержать минимум 6 символов"),
   firstName: z.string().min(1, "Имя обязательно"),
   lastName: z.string().min(1, "Фамилия обязательна"),
-  role: z.string().min(1, "Роль обязательна"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -50,7 +49,6 @@ export default function AuthPage() {
       password: "",
       firstName: "",
       lastName: "",
-      role: "прораб",
     },
   });
 
@@ -75,7 +73,12 @@ export default function AuthPage() {
 
   const onRegister = async (data: RegisterForm) => {
     try {
-      await registerMutation.mutateAsync(data);
+      // Add default role for new registrations
+      const registerData = {
+        ...data,
+        role: "прораб", // Default role, can be changed by general director
+      };
+      await registerMutation.mutateAsync(registerData);
       toast({
         title: "Регистрация завершена",
         description: "Добро пожаловать в систему управления перевозками",
@@ -276,24 +279,10 @@ export default function AuthPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="role">Роль</Label>
-                    <Select onValueChange={(value) => registerForm.setValue("role", value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите роль" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="прораб">Прораб</SelectItem>
-                        <SelectItem value="логист">Логист</SelectItem>
-                        <SelectItem value="руководитель">Руководитель СМТ</SelectItem>
-                        <SelectItem value="финансовый">Финансовый директор</SelectItem>
-                        <SelectItem value="генеральный">Генеральный директор</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {registerForm.formState.errors.role && (
-                      <p className="text-sm text-red-500">
-                        {registerForm.formState.errors.role.message}
-                      </p>
-                    )}
+                    <p className="text-sm text-gray-600">
+                      По умолчанию новым пользователям присваивается роль "Прораб". 
+                      Роль может быть изменена Генеральным директором после регистрации.
+                    </p>
                   </div>
 
                   <Button 

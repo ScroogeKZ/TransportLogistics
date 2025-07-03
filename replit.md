@@ -125,6 +125,11 @@ Changelog:
   - Comprehensive admin panel for managing users, requests, carriers, routes, and system data
   - Role-based navigation hiding super admin features from regular users
   - Full CRUD operations for all system entities
+- January 3, 2025. Replaced Replit Auth with custom username/password authentication:
+  - Custom login and registration forms with bcrypt password hashing
+  - Session-based authentication using PostgreSQL storage
+  - Role assignment restricted to General Director only
+  - New users default to "прораб" role during registration
 
 ## User Preferences
 
