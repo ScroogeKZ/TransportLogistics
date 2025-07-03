@@ -379,8 +379,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Role comparison:", { 
         userRole: user?.role, 
         isGeneral: user?.role === "генеральный", 
-        isSuper: user?.role === "супер_админ",
-        includes: ["генеральный", "супер_админ"].includes(user?.role || "")
+        isSuper: user?.role === "супер_юзер",
+        includes: ["генеральный", "супер_юзер"].includes(user?.role || "")
       });
       
       // Allow access for генеральный and супер_юзер roles
