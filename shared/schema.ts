@@ -8,6 +8,7 @@ import {
   serial,
   decimal,
   integer,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -72,6 +73,82 @@ export const requestComments = pgTable("request_comments", {
   comment: text("comment").notNull(),
   action: varchar("action"), // created, approved, rejected, updated, commented
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Carriers table
+export const carriers = pgTable("carriers", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  contactPerson: varchar("contact_person").notNull(),
+  phone: varchar("phone").notNull(),
+  email: varchar("email"),
+  address: text("address").notNull(),
+  transportTypes: text("transport_types").array(),
+  rating: integer("rating").default(5),
+  priceRange: varchar("price_range"),
+  notes: text("notes"),
+  isActive: integer("is_active").default(1),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Routes table
+export const routes = pgTable("routes", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  fromCity: varchar("from_city").notNull(),
+  toCity: varchar("to_city").notNull(),
+  distance: integer("distance").notNull(), // in km
+  estimatedTime: integer("estimated_time").notNull(), // in hours
+  tollCost: decimal("toll_cost", { precision: 10, scale: 2 }),
+  fuelCost: decimal("fuel_cost", { precision: 10, scale: 2 }),
+  isOptimized: integer("is_optimized").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Route points table
+export const routePoints = pgTable("route_points", {
+  id: serial("id").primaryKey(),
+  routeId: integer("route_id").notNull(),
+  sequence: integer("sequence").notNull(),
+  city: varchar("city").notNull(),
+  address: text("address"),
+  type: varchar("type").notNull(), // pickup, delivery, warehouse
+  timeWindow: varchar("time_window"),
+  coordinates: text("coordinates"), // JSON string with lat/lng
+  priority: integer("priority").default(1),
+});
+
+// Shipments tracking table
+export const shipments = pgTable("shipments", {
+  id: serial("id").primaryKey(),
+  requestId: integer("request_id").notNull(),
+  driverName: varchar("driver_name").notNull(),
+  driverPhone: varchar("driver_phone"),
+  vehicleNumber: varchar("vehicle_number").notNull(),
+  carrierId: integer("carrier_id"),
+  routeId: integer("route_id"),
+  status: varchar("status").notNull().default("in_transit"), // in_transit, loading, unloading, delayed, completed
+  currentLocation: varchar("current_location"),
+  progress: integer("progress").default(0), // percentage
+  estimatedArrival: timestamp("estimated_arrival"),
+  actualArrival: timestamp("actual_arrival"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Tracking points table
+export const trackingPoints = pgTable("tracking_points", {
+  id: serial("id").primaryKey(),
+  shipmentId: integer("shipment_id").notNull(),
+  timestamp: timestamp("timestamp").defaultNow(),
+  location: varchar("location").notNull(),
+  coordinates: text("coordinates"), // JSON string with lat/lng
+  speed: integer("speed").default(0),
+  fuelLevel: integer("fuel_level"),
+  status: varchar("status").notNull(),
+  notes: text("notes"),
 });
 
 // Define relations
@@ -140,3 +217,43 @@ export const insertRequestCommentSchema = createInsertSchema(requestComments).om
 });
 
 export const updateTransportationRequestSchema = insertTransportationRequestSchema.partial();
+
+// New types for additional tables
+export type Carrier = typeof carriers.$inferSelect;
+export type InsertCarrier = typeof carriers.$inferInsert;
+
+export type Route = typeof routes.$inferSelect;
+export type InsertRoute = typeof routes.$inferInsert;
+
+export type RoutePoint = typeof routePoints.$inferSelect;
+export type InsertRoutePoint = typeof routePoints.$inferInsert;
+
+export type Shipment = typeof shipments.$inferSelect;
+export type InsertShipment = typeof shipments.$inferInsert;
+
+export type TrackingPoint = typeof trackingPoints.$inferSelect;
+export type InsertTrackingPoint = typeof trackingPoints.$inferInsert;
+
+// New schemas
+export const insertCarrierSchema = createInsertSchema(carriers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertRouteSchema = createInsertSchema(routes).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertShipmentSchema = createInsertSchema(shipments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTrackingPointSchema = createInsertSchema(trackingPoints).omit({
+  id: true,
+  timestamp: true,
+});

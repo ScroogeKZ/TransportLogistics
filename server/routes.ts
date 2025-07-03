@@ -253,6 +253,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Carrier management routes
+  app.get("/api/carriers", isAuthenticated, async (req: any, res) => {
+    try {
+      const carriers = await storage.getAllCarriers();
+      res.json(carriers);
+    } catch (error) {
+      console.error("Error fetching carriers:", error);
+      res.status(500).json({ message: "Failed to fetch carriers" });
+    }
+  });
+
+  app.post("/api/carriers", isAuthenticated, async (req: any, res) => {
+    try {
+      const carrierData = req.body;
+      const newCarrier = await storage.createCarrier(carrierData);
+      res.json(newCarrier);
+    } catch (error) {
+      console.error("Error creating carrier:", error);
+      res.status(500).json({ message: "Failed to create carrier" });
+    }
+  });
+
+  app.patch("/api/carriers/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const carrierId = parseInt(req.params.id);
+      const updates = req.body;
+      const updatedCarrier = await storage.updateCarrier(carrierId, updates);
+      res.json(updatedCarrier);
+    } catch (error) {
+      console.error("Error updating carrier:", error);
+      res.status(500).json({ message: "Failed to update carrier" });
+    }
+  });
+
+  app.delete("/api/carriers/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const carrierId = parseInt(req.params.id);
+      await storage.deleteCarrier(carrierId);
+      res.json({ message: "Carrier deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting carrier:", error);
+      res.status(500).json({ message: "Failed to delete carrier" });
+    }
+  });
+
+  // Route management routes
+  app.get("/api/routes", isAuthenticated, async (req: any, res) => {
+    try {
+      const routes = await storage.getAllRoutes();
+      res.json(routes);
+    } catch (error) {
+      console.error("Error fetching routes:", error);
+      res.status(500).json({ message: "Failed to fetch routes" });
+    }
+  });
+
+  app.post("/api/routes", isAuthenticated, async (req: any, res) => {
+    try {
+      const routeData = req.body;
+      const newRoute = await storage.createRoute(routeData);
+      res.json(newRoute);
+    } catch (error) {
+      console.error("Error creating route:", error);
+      res.status(500).json({ message: "Failed to create route" });
+    }
+  });
+
+  // Shipment tracking routes
+  app.get("/api/shipments", isAuthenticated, async (req: any, res) => {
+    try {
+      const shipments = await storage.getAllShipments();
+      res.json(shipments);
+    } catch (error) {
+      console.error("Error fetching shipments:", error);
+      res.status(500).json({ message: "Failed to fetch shipments" });
+    }
+  });
+
+  app.post("/api/shipments", isAuthenticated, async (req: any, res) => {
+    try {
+      const shipmentData = req.body;
+      const newShipment = await storage.createShipment(shipmentData);
+      res.json(newShipment);
+    } catch (error) {
+      console.error("Error creating shipment:", error);
+      res.status(500).json({ message: "Failed to create shipment" });
+    }
+  });
+
+  app.get("/api/shipments/:id/tracking", isAuthenticated, async (req: any, res) => {
+    try {
+      const shipmentId = parseInt(req.params.id);
+      const trackingPoints = await storage.getTrackingPoints(shipmentId);
+      res.json(trackingPoints);
+    } catch (error) {
+      console.error("Error fetching tracking points:", error);
+      res.status(500).json({ message: "Failed to fetch tracking points" });
+    }
+  });
+
+  app.post("/api/tracking-points", isAuthenticated, async (req: any, res) => {
+    try {
+      const pointData = req.body;
+      const newPoint = await storage.addTrackingPoint(pointData);
+      res.json(newPoint);
+    } catch (error) {
+      console.error("Error adding tracking point:", error);
+      res.status(500).json({ message: "Failed to add tracking point" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

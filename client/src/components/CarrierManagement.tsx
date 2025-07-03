@@ -36,7 +36,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 interface Carrier {
-  id: string;
+  id: number;
   name: string;
   contactPerson: string;
   phone: string;
@@ -69,39 +69,40 @@ const transportTypes = [
   "Специальный",
 ];
 
-const mockCarriers: Carrier[] = [
-  {
-    id: "1",
-    name: "КазТранс ЛТД",
-    contactPerson: "Иванов Иван Иванович",
-    phone: "+7 (777) 123-45-67",
-    email: "info@kaztrans.kz",
-    address: "Алматы, ул. Абая, 123",
-    transportTypes: ["Грузовик", "Полуприцеп"],
-    rating: 5,
-    priceRange: "150-300 тенге/км",
-    notes: "Надежный партнер, работаем 3 года",
-  },
-  {
-    id: "2",
-    name: "Степь Логистик",
-    contactPerson: "Петров Петр Петрович",
-    phone: "+7 (777) 234-56-78",
-    email: "manager@steplogistic.kz",
-    address: "Астана, проспект Мангилик Ел, 45",
-    transportTypes: ["Рефрижератор", "Тентованный"],
-    rating: 4,
-    priceRange: "200-400 тенге/км",
-    notes: "Специализируются на перевозке продуктов",
-  },
-];
+
 
 export default function CarrierManagement() {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedCarrier, setSelectedCarrier] = useState<Carrier | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const { data: carriersData = [], isLoading } = useQuery({
+    queryKey: ["/api/carriers"],
+  });
+
+  const createCarrierMutation = useMutation({
+    mutationFn: (data: z.infer<typeof carrierSchema>) =>
+      apiRequest("/api/carriers", "POST", data),
+    onSuccess: () => {
+      toast({
+        title: "Перевозчик добавлен",
+        description: "Перевозчик успешно добавлен в базу данных",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/carriers"] });
+      setModalOpen(false);
+      form.reset();
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось добавить перевозчика",
+        variant: "destructive",
+      });
+    },
+  });
 
   const form = useForm<z.infer<typeof carrierSchema>>({
     resolver: zodResolver(carrierSchema),
@@ -118,19 +119,18 @@ export default function CarrierManagement() {
     },
   });
 
-  const carriers = mockCarriers.filter(carrier =>
+  const carriers = (carriersData as Carrier[]).filter((carrier: Carrier) =>
     carrier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     carrier.contactPerson.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const onSubmit = (data: z.infer<typeof carrierSchema>) => {
-    toast({
-      title: "Перевозчик добавлен",
-      description: `${data.name} успешно добавлен в базу данных`,
-    });
-    setModalOpen(false);
-    form.reset();
+    createCarrierMutation.mutate(data);
   };
+
+  if (isLoading) {
+    return <div>Загрузка...</div>;
+  }
 
   const getRatingStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (

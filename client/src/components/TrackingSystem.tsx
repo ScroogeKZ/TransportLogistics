@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,91 +46,16 @@ interface ActiveShipment {
   trackingPoints: TrackingPoint[];
 }
 
-const mockShipments: ActiveShipment[] = [
-  {
-    id: "1",
-    requestNumber: "TR-2025-001",
-    driverName: "Иванов Сергей",
-    driverPhone: "+7 (777) 123-45-67",
-    vehicleNumber: "123 ABC 02",
-    route: "Алматы → Астана",
-    status: "in_transit",
-    currentLocation: "Караганда",
-    progress: 65,
-    estimatedArrival: "2025-01-03 14:00",
-    lastUpdate: "2025-01-03 10:30",
-    trackingPoints: [
-      {
-        id: "1",
-        timestamp: "2025-01-03 06:00",
-        location: "Алматы - Склад отправления",
-        status: "loading",
-        coordinates: { lat: 43.2220, lng: 76.8512 },
-        speed: 0,
-        fuelLevel: 95,
-        notes: "Погрузка завершена"
-      },
-      {
-        id: "2",
-        timestamp: "2025-01-03 08:30",
-        location: "Балхаш",
-        status: "in_transit",
-        coordinates: { lat: 46.8500, lng: 74.9833 },
-        speed: 85,
-        fuelLevel: 80,
-      },
-      {
-        id: "3",
-        timestamp: "2025-01-03 10:30",
-        location: "Караганда",
-        status: "in_transit",
-        coordinates: { lat: 49.8069, lng: 73.0819 },
-        speed: 0,
-        fuelLevel: 65,
-        notes: "Остановка для отдыха"
-      },
-    ],
-  },
-  {
-    id: "2",
-    requestNumber: "TR-2025-002",
-    driverName: "Петров Александр",
-    driverPhone: "+7 (777) 234-56-78",
-    vehicleNumber: "456 DEF 02",
-    route: "Шымкент → Алматы",
-    status: "delayed",
-    currentLocation: "Тараз",
-    progress: 45,
-    estimatedArrival: "2025-01-03 18:00",
-    lastUpdate: "2025-01-03 09:15",
-    trackingPoints: [
-      {
-        id: "1",
-        timestamp: "2025-01-03 05:00",
-        location: "Шымкент - Склад отправления",
-        status: "loading",
-        coordinates: { lat: 42.3000, lng: 69.5999 },
-        speed: 0,
-        fuelLevel: 100,
-      },
-      {
-        id: "2",
-        timestamp: "2025-01-03 09:15",
-        location: "Тараз",
-        status: "delayed",
-        coordinates: { lat: 42.9000, lng: 71.3667 },
-        speed: 0,
-        fuelLevel: 75,
-        notes: "Техническая неисправность"
-      },
-    ],
-  },
-];
+
 
 export default function TrackingSystem() {
   const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedShipment, setSelectedShipment] = useState<ActiveShipment | null>(null);
+
+  const { data: shipmentsData = [], isLoading } = useQuery({
+    queryKey: ["/api/shipments"],
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -180,8 +106,7 @@ export default function TrackingSystem() {
     }
   };
 
-  const filteredShipments = mockShipments.filter(shipment =>
-    shipment.requestNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredShipments = (shipmentsData as any[]).filter((shipment: any) =>
     shipment.driverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     shipment.vehicleNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -209,7 +134,7 @@ export default function TrackingSystem() {
 
       <Tabs defaultValue="active" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="active">Активные ({mockShipments.length})</TabsTrigger>
+          <TabsTrigger value="active">Активные ({shipmentsData.length})</TabsTrigger>
           <TabsTrigger value="completed">Завершенные</TabsTrigger>
           <TabsTrigger value="map">Карта</TabsTrigger>
         </TabsList>
@@ -224,8 +149,11 @@ export default function TrackingSystem() {
             />
           </div>
 
-          <div className="grid gap-4">
-            {filteredShipments.map((shipment) => (
+          {isLoading ? (
+            <div>Загрузка...</div>
+          ) : (
+            <div className="grid gap-4">
+              {filteredShipments.map((shipment: any) => (
               <Card key={shipment.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
@@ -299,7 +227,8 @@ export default function TrackingSystem() {
                 </CardContent>
               </Card>
             ))}
-          </div>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="completed" className="space-y-4">

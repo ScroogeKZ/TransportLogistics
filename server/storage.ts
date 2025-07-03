@@ -2,12 +2,25 @@ import {
   users,
   transportationRequests,
   requestComments,
+  carriers,
+  routes,
+  routePoints,
+  shipments,
+  trackingPoints,
   type User,
   type UpsertUser,
   type TransportationRequest,
   type InsertTransportationRequest,
   type RequestComment,
   type InsertRequestComment,
+  type Carrier,
+  type InsertCarrier,
+  type Route,
+  type InsertRoute,
+  type Shipment,
+  type InsertShipment,
+  type TrackingPoint,
+  type InsertTrackingPoint,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, count, sum, avg, sql } from "drizzle-orm";
@@ -41,6 +54,31 @@ export interface IStorage {
   // User management
   getAllUsers(): Promise<User[]>;
   updateUser(id: string, updates: Partial<UpsertUser>): Promise<User>;
+
+  // Carrier management
+  getAllCarriers(): Promise<Carrier[]>;
+  getCarrier(id: number): Promise<Carrier | undefined>;
+  createCarrier(carrier: InsertCarrier): Promise<Carrier>;
+  updateCarrier(id: number, updates: Partial<InsertCarrier>): Promise<Carrier>;
+  deleteCarrier(id: number): Promise<void>;
+
+  // Route management
+  getAllRoutes(): Promise<Route[]>;
+  getRoute(id: number): Promise<Route | undefined>;
+  createRoute(route: InsertRoute): Promise<Route>;
+  updateRoute(id: number, updates: Partial<InsertRoute>): Promise<Route>;
+  deleteRoute(id: number): Promise<void>;
+
+  // Shipment tracking
+  getAllShipments(): Promise<Shipment[]>;
+  getShipment(id: number): Promise<Shipment | undefined>;
+  getShipmentByRequestId(requestId: number): Promise<Shipment | undefined>;
+  createShipment(shipment: InsertShipment): Promise<Shipment>;
+  updateShipment(id: number, updates: Partial<InsertShipment>): Promise<Shipment>;
+  
+  // Tracking points
+  getTrackingPoints(shipmentId: number): Promise<TrackingPoint[]>;
+  addTrackingPoint(point: InsertTrackingPoint): Promise<TrackingPoint>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -270,6 +308,105 @@ export class DatabaseStorage implements IStorage {
       status: statusMap[r.status] || r.status,
       count: r.count,
     }));
+  }
+
+  // Carrier management methods
+  async getAllCarriers(): Promise<Carrier[]> {
+    return await db.select().from(carriers).where(eq(carriers.isActive, 1)).orderBy(carriers.name);
+  }
+
+  async getCarrier(id: number): Promise<Carrier | undefined> {
+    const [carrier] = await db.select().from(carriers).where(eq(carriers.id, id));
+    return carrier;
+  }
+
+  async createCarrier(carrier: InsertCarrier): Promise<Carrier> {
+    const [newCarrier] = await db.insert(carriers).values(carrier).returning();
+    return newCarrier;
+  }
+
+  async updateCarrier(id: number, updates: Partial<InsertCarrier>): Promise<Carrier> {
+    const [updatedCarrier] = await db
+      .update(carriers)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(carriers.id, id))
+      .returning();
+    return updatedCarrier;
+  }
+
+  async deleteCarrier(id: number): Promise<void> {
+    await db.update(carriers).set({ isActive: 0 }).where(eq(carriers.id, id));
+  }
+
+  // Route management methods
+  async getAllRoutes(): Promise<Route[]> {
+    return await db.select().from(routes).orderBy(desc(routes.createdAt));
+  }
+
+  async getRoute(id: number): Promise<Route | undefined> {
+    const [route] = await db.select().from(routes).where(eq(routes.id, id));
+    return route;
+  }
+
+  async createRoute(route: InsertRoute): Promise<Route> {
+    const [newRoute] = await db.insert(routes).values(route).returning();
+    return newRoute;
+  }
+
+  async updateRoute(id: number, updates: Partial<InsertRoute>): Promise<Route> {
+    const [updatedRoute] = await db
+      .update(routes)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(routes.id, id))
+      .returning();
+    return updatedRoute;
+  }
+
+  async deleteRoute(id: number): Promise<void> {
+    await db.delete(routes).where(eq(routes.id, id));
+  }
+
+  // Shipment tracking methods
+  async getAllShipments(): Promise<Shipment[]> {
+    return await db.select().from(shipments).orderBy(desc(shipments.createdAt));
+  }
+
+  async getShipment(id: number): Promise<Shipment | undefined> {
+    const [shipment] = await db.select().from(shipments).where(eq(shipments.id, id));
+    return shipment;
+  }
+
+  async getShipmentByRequestId(requestId: number): Promise<Shipment | undefined> {
+    const [shipment] = await db.select().from(shipments).where(eq(shipments.requestId, requestId));
+    return shipment;
+  }
+
+  async createShipment(shipment: InsertShipment): Promise<Shipment> {
+    const [newShipment] = await db.insert(shipments).values(shipment).returning();
+    return newShipment;
+  }
+
+  async updateShipment(id: number, updates: Partial<InsertShipment>): Promise<Shipment> {
+    const [updatedShipment] = await db
+      .update(shipments)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(shipments.id, id))
+      .returning();
+    return updatedShipment;
+  }
+
+  // Tracking points methods
+  async getTrackingPoints(shipmentId: number): Promise<TrackingPoint[]> {
+    return await db
+      .select()
+      .from(trackingPoints)
+      .where(eq(trackingPoints.shipmentId, shipmentId))
+      .orderBy(desc(trackingPoints.timestamp));
+  }
+
+  async addTrackingPoint(point: InsertTrackingPoint): Promise<TrackingPoint> {
+    const [newPoint] = await db.insert(trackingPoints).values(point).returning();
+    return newPoint;
   }
 }
 
