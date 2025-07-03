@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, requireAuth } from "./auth";
 import {
   insertTransportationRequestSchema,
   updateTransportationRequestSchema,
@@ -11,29 +11,13 @@ import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
-  await setupAuth(app);
-
-  // Auth routes
-  app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  setupAuth(app);
 
   // Transportation requests routes
-  app.get("/api/transportation-requests", isAuthenticated, async (req: any, res) => {
+  app.get("/api/transportation-requests", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
+      const userId = req.user.id;
+      const user = req.user;
 
       const requests = await storage.getTransportationRequestsForUser(userId, user.role);
       res.json(requests);
@@ -43,7 +27,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/transportation-requests/:id", isAuthenticated, async (req: any, res) => {
+  app.get("/api/transportation-requests/:id", requireAuth, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const request = await storage.getTransportationRequest(id);
@@ -59,27 +43,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/transportation-requests", isAuthenticated, async (req: any, res) => {
+  app.post("/api/transportation-requests", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
+      const userId = req.user.id;
+      const user = req.user;
 
       // Generate request number
       const requestCount = await storage.getTransportationRequestsForUser("", "all");
       const requestNumber = `REQ-${(requestCount.length + 1).toString().padStart(4, '0')}`;
 
-      const validatedData = insertTransportationRequestSchema.parse({
+      const requestData = {
         requestNumber,
         ...req.body,
         createdById: userId,
         status: "created",
-      });
+      };
 
-      const request = await storage.createTransportationRequest(validatedData);
+      const request = await storage.createTransportationRequest(requestData);
       
       // Add creation comment
       await storage.addRequestComment({
@@ -99,15 +79,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/transportation-requests/:id", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/transportation-requests/:id", requireAuth, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
+      const userId = req.user.id;
+      const user = req.user;
 
       const existingRequest = await storage.getTransportationRequest(id);
       if (!existingRequest) {
@@ -155,7 +131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Request comments routes
-  app.get("/api/transportation-requests/:id/comments", isAuthenticated, async (req: any, res) => {
+  app.get("/api/transportation-requests/:id/comments", requireAuth, async (req: any, res) => {
     try {
       const requestId = parseInt(req.params.id);
       const comments = await storage.getRequestComments(requestId);
@@ -166,10 +142,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/transportation-requests/:id/comments", isAuthenticated, async (req: any, res) => {
+  app.post("/api/transportation-requests/:id/comments", requireAuth, async (req: any, res) => {
     try {
       const requestId = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       const validatedData = insertRequestCommentSchema.parse({
         ...req.body,
@@ -190,7 +166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dashboard routes
-  app.get("/api/dashboard/stats", isAuthenticated, async (req: any, res) => {
+  app.get("/api/dashboard/stats", requireAuth, async (req: any, res) => {
     try {
       const stats = await storage.getDashboardStats();
       res.json(stats);
@@ -200,7 +176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/dashboard/monthly-stats", isAuthenticated, async (req: any, res) => {
+  app.get("/api/dashboard/monthly-stats", requireAuth, async (req: any, res) => {
     try {
       const stats = await storage.getMonthlyStats();
       res.json(stats);
@@ -210,7 +186,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/dashboard/status-stats", isAuthenticated, async (req: any, res) => {
+  app.get("/api/dashboard/status-stats", requireAuth, async (req: any, res) => {
     try {
       const stats = await storage.getStatusStats();
       res.json(stats);
@@ -221,10 +197,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User management routes
-  app.get("/api/users", isAuthenticated, async (req: any, res) => {
+  app.get("/api/users", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const user = req.user;
       
       if (!user || user.role !== "генеральный") {
         return res.status(403).json({ message: "Access denied" });
@@ -238,10 +213,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/users/:id", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/users/:id", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const user = req.user;
       
       if (!user || user.role !== "генеральный") {
         return res.status(403).json({ message: "Access denied" });
@@ -259,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Carrier management routes
-  app.get("/api/carriers", isAuthenticated, async (req: any, res) => {
+  app.get("/api/carriers", requireAuth, async (req: any, res) => {
     try {
       const carriers = await storage.getAllCarriers();
       res.json(carriers);
@@ -269,7 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/carriers", isAuthenticated, async (req: any, res) => {
+  app.post("/api/carriers", requireAuth, async (req: any, res) => {
     try {
       const carrierData = req.body;
       const newCarrier = await storage.createCarrier(carrierData);
@@ -280,7 +254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/carriers/:id", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/carriers/:id", requireAuth, async (req: any, res) => {
     try {
       const carrierId = parseInt(req.params.id);
       const updates = req.body;
@@ -292,7 +266,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/carriers/:id", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/carriers/:id", requireAuth, async (req: any, res) => {
     try {
       const carrierId = parseInt(req.params.id);
       await storage.deleteCarrier(carrierId);
@@ -304,7 +278,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Route management routes
-  app.get("/api/routes", isAuthenticated, async (req: any, res) => {
+  app.get("/api/routes", requireAuth, async (req: any, res) => {
     try {
       const routes = await storage.getAllRoutes();
       res.json(routes);
@@ -314,7 +288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/routes", isAuthenticated, async (req: any, res) => {
+  app.post("/api/routes", requireAuth, async (req: any, res) => {
     try {
       const routeData = req.body;
       const newRoute = await storage.createRoute(routeData);
@@ -326,7 +300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Shipment tracking routes
-  app.get("/api/shipments", isAuthenticated, async (req: any, res) => {
+  app.get("/api/shipments", requireAuth, async (req: any, res) => {
     try {
       const shipments = await storage.getAllShipments();
       res.json(shipments);
@@ -336,7 +310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/shipments", isAuthenticated, async (req: any, res) => {
+  app.post("/api/shipments", requireAuth, async (req: any, res) => {
     try {
       const shipmentData = req.body;
       const newShipment = await storage.createShipment(shipmentData);
@@ -347,7 +321,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/shipments/:id/tracking", isAuthenticated, async (req: any, res) => {
+  app.get("/api/shipments/:id/tracking", requireAuth, async (req: any, res) => {
     try {
       const shipmentId = parseInt(req.params.id);
       const trackingPoints = await storage.getTrackingPoints(shipmentId);
@@ -358,7 +332,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/tracking-points", isAuthenticated, async (req: any, res) => {
+  app.post("/api/tracking-points", requireAuth, async (req: any, res) => {
     try {
       const pointData = req.body;
       const newPoint = await storage.addTrackingPoint(pointData);
@@ -370,9 +344,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User management routes (Super Admin only)
-  app.get("/api/users", isAuthenticated, async (req: any, res) => {
+  app.get("/api/users", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       console.log("User trying to access /api/users:", { userId, userRole: user?.role, roleLength: user?.role?.length });
@@ -400,9 +374,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/users", isAuthenticated, async (req: any, res) => {
+  app.post("/api/users", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== "супер_юзер") {
@@ -425,9 +399,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/users/:id", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/users/:id", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== "супер_юзер") {
@@ -445,9 +419,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/users/:id", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/users/:id", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== "супер_юзер") {

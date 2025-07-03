@@ -29,7 +29,7 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const [location] = useLocation();
 
@@ -173,7 +173,7 @@ export default function Layout({ children }: LayoutProps) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => window.location.href = "/api/logout"}
+              onClick={() => logout()}
             >
               <LogOut className="h-4 w-4" />
             </Button>
