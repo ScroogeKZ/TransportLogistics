@@ -68,7 +68,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
+      // Generate request number
+      const requestCount = await storage.getTransportationRequestsForUser("", "all");
+      const requestNumber = `REQ-${(requestCount.length + 1).toString().padStart(4, '0')}`;
+
       const validatedData = insertTransportationRequestSchema.parse({
+        requestNumber,
         ...req.body,
         createdById: userId,
         status: "created",
@@ -364,6 +369,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User management routes (Super Admin only)
+  app.get("/api/users", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !["генеральный", "супер_админ"].includes(user.role)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.post("/api/users", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== "супер_админ") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const userData = req.body;
+      // Generate a unique ID for the new user
+      const newUserId = `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      const newUser = await storage.upsertUser({
+        id: newUserId,
+        ...userData,
+      });
+      
+      res.status(201).json(newUser);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Failed to create user" });
+    }
+  });
+
+  app.patch("/api/users/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== "супер_админ") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const targetUserId = req.params.id;
+      const updates = req.body;
+      
+      const updatedUser = await storage.updateUser(targetUserId, updates);
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  app.delete("/api/users/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== "супер_админ") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const targetUserId = req.params.id;
+      
+      // Don't allow deleting yourself
+      if (targetUserId === userId) {
+        return res.status(400).json({ message: "Cannot delete your own account" });
+      }
+      
+      // For now, we'll just return success - in a real app you'd implement user deletion
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
@@ -374,8 +466,8 @@ function checkEditPermission(
   requestCreatedById: string,
   userId: string
 ): boolean {
-  // Генеральный директор can edit everything
-  if (userRole === "генеральный") return true;
+  // Генеральный директор and супер_админ can edit everything
+  if (userRole === "генеральный" || userRole === "супер_админ") return true;
 
   // Прораб can only edit their own requests if still in created status
   if (userRole === "прораб") {

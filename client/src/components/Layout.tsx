@@ -97,6 +97,13 @@ export default function Layout({ children }: LayoutProps) {
       current: location === "/users",
       roles: ["генеральный"],
     },
+    {
+      name: "Супер Админ",
+      href: "/super-admin",
+      icon: Users,
+      current: location === "/super-admin",
+      roles: ["супер_админ"],
+    },
   ];
 
   const visibleNavigation = navigation.filter(
