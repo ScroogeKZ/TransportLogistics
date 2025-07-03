@@ -31,6 +31,7 @@ import { z } from "zod";
 
 const formSchema = z.object({
   fromCity: z.string().min(1, "Выберите город отправления"),
+  fromAddress: z.string().min(1, "Введите адрес отправления"),
   toCity: z.string().min(1, "Выберите город назначения"),
   cargoType: z.string().min(1, "Выберите тип груза"),
   weight: z.string().min(1, "Введите вес груза"),
@@ -51,6 +52,7 @@ export default function RequestForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       fromCity: "",
+      fromAddress: "",
       toCity: "",
       cargoType: "",
       weight: "",
@@ -65,9 +67,17 @@ export default function RequestForm() {
   const createRequestMutation = useMutation({
     mutationFn: async (data: any) => {
       const payload = {
-        ...data,
-        weight: parseFloat(data.weight),
-        estimatedCost: data.estimatedCost ? parseFloat(data.estimatedCost) : null,
+        cargo_type: data.cargoType,
+        cargo_weight: parseFloat(data.weight),
+        pickup_location: data.fromCity,
+        pickup_address: data.fromAddress, 
+        delivery_location: data.toCity,
+        pickup_date: new Date().toISOString().split('T')[0], // Today's date
+        transport_type: data.transportType,
+        carrier: data.carrier,
+        urgency_level: data.urgency,
+        special_requirements: data.description,
+        estimated_cost: data.estimatedCost ? parseFloat(data.estimatedCost) : null,
       };
       return await apiRequest("POST", "/api/transportation-requests", payload);
     },
@@ -125,6 +135,20 @@ export default function RequestForm() {
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="fromAddress"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Адрес *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Введите точный адрес отправления" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

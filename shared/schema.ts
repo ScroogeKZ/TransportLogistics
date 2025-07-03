@@ -45,6 +45,7 @@ export const transportationRequests = pgTable("transportation_requests", {
   
   // Basic information (filled by Прораб)
   fromCity: varchar("from_city").notNull(),
+  fromAddress: varchar("from_address").notNull(),
   toCity: varchar("to_city").notNull(),
   cargoType: varchar("cargo_type").notNull(),
   weight: varchar("weight").notNull(),
