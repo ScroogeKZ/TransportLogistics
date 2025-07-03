@@ -159,6 +159,7 @@ export class DatabaseStorage implements IStorage {
         break;
       case "финансовый":
       case "генеральный":
+      case "супер_админ":
         // Can see all requests
         whereClause = undefined;
         break;

@@ -375,8 +375,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (!user || !["генеральный", "супер_админ"].includes(user.role)) {
-        return res.status(403).json({ message: "Access denied" });
+      console.log("User trying to access /api/users:", { userId, userRole: user?.role, roleLength: user?.role?.length });
+      console.log("Role comparison:", { 
+        userRole: user?.role, 
+        isGeneral: user?.role === "генеральный", 
+        isSuper: user?.role === "супер_админ",
+        includes: ["генеральный", "супер_админ"].includes(user?.role || "")
+      });
+      
+      // Allow access for генеральный and супер_админ roles
+      const allowedRoles = ["генеральный", "супер_админ"];
+      const hasAccess = user && allowedRoles.some(role => user.role === role);
+      
+      if (!hasAccess) {
+        console.log("Access denied for user:", { userId, userRole: user?.role });
+        return res.status(403).json({ message: "Access denied", userRole: user?.role });
       }
 
       const users = await storage.getAllUsers();

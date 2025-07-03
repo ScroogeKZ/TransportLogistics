@@ -119,6 +119,12 @@ Changelog:
   - Route Optimization: Route planning and optimization tools
   - Cost Calculator: Transportation cost calculation with detailed breakdown
   - Tracking System: Real-time shipment tracking and monitoring
+- January 3, 2025. Migration from Replit Agent to Replit environment completed
+- January 3, 2025. Added Super Admin functionality:
+  - Super Admin role (супер_админ) with complete system access
+  - Comprehensive admin panel for managing users, requests, carriers, routes, and system data
+  - Role-based navigation hiding super admin features from regular users
+  - Full CRUD operations for all system entities
 
 ## User Preferences
 
