@@ -33,6 +33,7 @@ const formSchema = z.object({
   fromCity: z.string().min(1, "Выберите город отправления"),
   fromAddress: z.string().min(1, "Введите адрес отправления"),
   toCity: z.string().min(1, "Выберите город назначения"),
+  toAddress: z.string().min(1, "Введите адрес назначения"),
   cargoType: z.string().min(1, "Выберите тип груза"),
   weight: z.string().min(1, "Введите вес груза"),
   description: z.string().optional(),
@@ -54,6 +55,7 @@ export default function RequestForm() {
       fromCity: "",
       fromAddress: "",
       toCity: "",
+      toAddress: "",
       cargoType: "",
       weight: "",
       description: "",
@@ -72,6 +74,7 @@ export default function RequestForm() {
         pickup_location: data.fromCity,
         pickup_address: data.fromAddress, 
         delivery_location: data.toCity,
+        delivery_address: data.toAddress,
         pickup_date: new Date().toISOString().split('T')[0], // Today's date
         transport_type: data.transportType,
         carrier: data.carrier,
@@ -174,6 +177,20 @@ export default function RequestForm() {
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="toAddress"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Адрес *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Введите точный адрес назначения" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

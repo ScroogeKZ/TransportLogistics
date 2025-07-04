@@ -47,6 +47,7 @@ export const transportationRequests = pgTable("transportation_requests", {
   fromCity: varchar("from_city").notNull(),
   fromAddress: varchar("from_address").notNull(),
   toCity: varchar("to_city").notNull(),
+  toAddress: varchar("to_address").notNull(),
   cargoType: varchar("cargo_type").notNull(),
   weight: varchar("weight").notNull(),
   description: text("description"),
