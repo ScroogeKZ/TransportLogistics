@@ -140,6 +140,7 @@ Changelog:
   - Updated database schema to store delivery addresses
   - Customized cargo types based on Хром KZ and Glass House companies in Astana
   - Added specialized categories for stainless steel products, glass items, railings, elevators, and architectural elements
+  - Added cargo dimensions fields (width, length, height) with metric units
 
 ## User Preferences
 

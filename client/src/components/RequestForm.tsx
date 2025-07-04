@@ -36,6 +36,9 @@ const formSchema = z.object({
   toAddress: z.string().min(1, "Введите адрес назначения"),
   cargoType: z.string().min(1, "Выберите тип груза"),
   weight: z.string().min(1, "Введите вес груза"),
+  width: z.string().optional(),
+  length: z.string().optional(),
+  height: z.string().optional(),
   description: z.string().optional(),
   estimatedCost: z.string().optional(),
   transportType: z.string().optional(),
@@ -58,6 +61,9 @@ export default function RequestForm() {
       toAddress: "",
       cargoType: "",
       weight: "",
+      width: "",
+      length: "",
+      height: "",
       description: "",
       estimatedCost: "",
       transportType: "",
@@ -75,6 +81,9 @@ export default function RequestForm() {
         toAddress: data.toAddress,
         cargoType: data.cargoType,
         weight: data.weight,
+        width: data.width,
+        length: data.length,
+        height: data.height,
         description: data.description,
         estimatedCost: data.estimatedCost,
         transportType: data.transportType,
@@ -234,6 +243,69 @@ export default function RequestForm() {
                         step="0.1"
                         min="0.1"
                         placeholder="15.5"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Габариты груза */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <FormField
+                control={form.control}
+                name="width"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ширина (м)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        min="0.1"
+                        placeholder="2.4"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="length"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Длина (м)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        min="0.1"
+                        placeholder="6.0"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="height"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Высота (м)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        min="0.1"
+                        placeholder="2.5"
                         {...field}
                       />
                     </FormControl>
