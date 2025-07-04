@@ -9,7 +9,7 @@ import CarrierManagement from "@/components/CarrierManagement";
 import RouteOptimization from "@/components/RouteOptimization";
 import CostCalculator from "@/components/CostCalculator";
 import TrackingSystem from "@/components/TrackingSystem";
-
+import AdminPanel from "@/components/AdminPanel";
 import NotFound from "@/pages/not-found";
 
 export default function Home() {
@@ -25,7 +25,7 @@ export default function Home() {
         <Route path="/routes" component={RouteOptimization} />
         <Route path="/calculator" component={CostCalculator} />
         <Route path="/tracking" component={TrackingSystem} />
-
+        <Route path="/admin" component={AdminPanel} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
