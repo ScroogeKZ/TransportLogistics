@@ -134,8 +134,8 @@ export default function Reports() {
         request.requestNumber,
         `${request.fromCity} → ${request.toCity}`,
         request.cargoType,
-        request.weight,
-        request.estimatedCost || 0,
+        parseFloat(request.weight) || 0,
+        parseFloat(request.estimatedCost) || 0,
         request.status,
         new Date(request.createdAt).toLocaleDateString(),
       ])
@@ -249,7 +249,7 @@ export default function Reports() {
               <div>
                 <p className="text-sm text-gray-600">Общий вес (тонн)</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {filteredRequests.reduce((sum: number, req: any) => sum + (req.weight || 0), 0).toFixed(1)}
+                  {filteredRequests.reduce((sum: number, req: any) => sum + (parseFloat(req.weight) || 0), 0).toFixed(1)}
                 </p>
               </div>
               <Truck className="w-8 h-8 text-green-500" />
@@ -263,7 +263,7 @@ export default function Reports() {
               <div>
                 <p className="text-sm text-gray-600">Общая стоимость</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  ₸ {filteredRequests.reduce((sum: number, req: any) => sum + (req.estimatedCost || 0), 0).toLocaleString()}
+                  ₸ {filteredRequests.reduce((sum: number, req: any) => sum + (parseFloat(req.estimatedCost) || 0), 0).toLocaleString()}
                 </p>
               </div>
               <DollarSign className="w-8 h-8 text-yellow-500" />
@@ -278,7 +278,7 @@ export default function Reports() {
                 <p className="text-sm text-gray-600">Средняя стоимость</p>
                 <p className="text-2xl font-bold text-gray-900">
                   ₸ {filteredRequests.length > 0 
-                    ? Math.round(filteredRequests.reduce((sum: number, req: any) => sum + (req.estimatedCost || 0), 0) / filteredRequests.length).toLocaleString()
+                    ? Math.round(filteredRequests.reduce((sum: number, req: any) => sum + (parseFloat(req.estimatedCost) || 0), 0) / filteredRequests.length).toLocaleString()
                     : 0
                   }
                 </p>
@@ -360,10 +360,10 @@ export default function Reports() {
                       {request.cargoType}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {request.weight}
+                      {parseFloat(request.weight) || 0}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {request.estimatedCost ? `₸ ${request.estimatedCost.toLocaleString()}` : "—"}
+                      {request.estimatedCost ? `₸ ${parseFloat(request.estimatedCost).toLocaleString()}` : "—"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
