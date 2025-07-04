@@ -236,13 +236,13 @@ export default function RequestForm() {
                 name="weight"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("cargo_weight")} *</FormLabel>
+                    <FormLabel>Вес груза (кг) *</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        step="0.1"
-                        min="0.1"
-                        placeholder="15.5"
+                        step="1"
+                        min="1"
+                        placeholder="1500"
                         {...field}
                       />
                     </FormControl>
