@@ -9,11 +9,7 @@ import CarrierManagement from "@/components/CarrierManagement";
 import RouteOptimization from "@/components/RouteOptimization";
 import CostCalculator from "@/components/CostCalculator";
 import TrackingSystem from "@/components/TrackingSystem";
-<<<<<<< HEAD
-import AdminPanel from "@/components/AdminPanel";
-=======
 import GodAdminDashboard from "@/components/GodAdminDashboard";
->>>>>>> 9b226f612a9b6b5021256c06ca9f32b0294e362c
 import NotFound from "@/pages/not-found";
 
 export default function Home() {
@@ -29,11 +25,7 @@ export default function Home() {
         <Route path="/routes" component={RouteOptimization} />
         <Route path="/calculator" component={CostCalculator} />
         <Route path="/tracking" component={TrackingSystem} />
-<<<<<<< HEAD
-        <Route path="/admin" component={AdminPanel} />
-=======
         <Route path="/super-admin" component={GodAdminDashboard} />
->>>>>>> 9b226f612a9b6b5021256c06ca9f32b0294e362c
         <Route component={NotFound} />
       </Switch>
     </Layout>

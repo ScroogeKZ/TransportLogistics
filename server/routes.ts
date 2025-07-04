@@ -213,9 +213,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-<<<<<<< HEAD
-
-=======
   // User management routes
   app.get("/api/users", requireAuth, async (req: any, res) => {
     try {
@@ -251,7 +248,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to update user" });
     }
   });
->>>>>>> 9b226f612a9b6b5021256c06ca9f32b0294e362c
 
   // Carrier management routes
   app.get("/api/carriers", requireAuth, async (req: any, res) => {
