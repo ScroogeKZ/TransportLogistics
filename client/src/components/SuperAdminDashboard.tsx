@@ -26,8 +26,8 @@ const roleOptions = [
   { value: "логист", label: "Логист" },
   { value: "руководитель", label: "Руководитель СМТ" },
   { value: "финансовый", label: "Финансовый директор" },
-  { value: "генеральный", label: "Генеральный директор" },
-  { value: "супер_юзер", label: "Супер Юзер" },
+  { value: "генеральный директор", label: "Генеральный директор" },
+  { value: "супер_админ", label: "Супер Админ" },
 ];
 
 export default function SuperAdminDashboard() {
