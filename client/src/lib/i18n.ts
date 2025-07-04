@@ -22,10 +22,18 @@ export const cities = [
 ];
 
 export const cargoTypes = [
-  { value: "construction", label: { ru: "Стройматериалы", kz: "Құрылыс материалдары", en: "Construction Materials" } },
-  { value: "equipment", label: { ru: "Оборудование", kz: "Жабдықтар", en: "Equipment" } },
-  { value: "metal", label: { ru: "Металлоконструкции", kz: "Металл конструкциялары", en: "Metal Structures" } },
-  { value: "chemicals", label: { ru: "Химические материалы", kz: "Химиялық материалдар", en: "Chemical Materials" } },
+  { value: "stainless_steel", label: { ru: "Изделия из нержавеющей стали", kz: "Тот баспайтын болаттан жасалған бұйымдар", en: "Stainless Steel Products" } },
+  { value: "glass_products", label: { ru: "Стеклянные изделия", kz: "Шыны бұйымдары", en: "Glass Products" } },
+  { value: "railings_stairs", label: { ru: "Перила и лестничные конструкции", kz: "Тосқауыл мен баспалдақ конструкциялары", en: "Railings and Stair Constructions" } },
+  { value: "elevator_portals", label: { ru: "Лифтовые порталы", kz: "Лифт порталдары", en: "Elevator Portals" } },
+  { value: "glass_packages", label: { ru: "Стеклопакеты", kz: "Шыны пакеттер", en: "Glass Packages" } },
+  { value: "shower_cabins", label: { ru: "Душевые кабины", kz: "Душ кабиналары", en: "Shower Cabins" } },
+  { value: "glass_partitions", label: { ru: "Стеклянные перегородки", kz: "Шыны бөлгіштер", en: "Glass Partitions" } },
+  { value: "mirrors", label: { ru: "Зеркала", kz: "Айналар", en: "Mirrors" } },
+  { value: "glass_furniture", label: { ru: "Стеклянная мебель", kz: "Шыны жиһаз", en: "Glass Furniture" } },
+  { value: "canopies_awnings", label: { ru: "Козырьки и навесы", kz: "Сайбандар мен төбелер", en: "Canopies and Awnings" } },
+  { value: "metal_profiles", label: { ru: "Металлические профили", kz: "Металл профильдер", en: "Metal Profiles" } },
+  { value: "decorative_gratings", label: { ru: "Декоративные решётки", kz: "Сәндік торлар", en: "Decorative Gratings" } },
   { value: "other", label: { ru: "Другое", kz: "Басқа", en: "Other" } },
 ];
 

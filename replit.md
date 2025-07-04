@@ -138,6 +138,8 @@ Changelog:
   - Added destination address field alongside destination city selection
   - Expanded city list to include 20 major Kazakhstan cities with multilingual support
   - Updated database schema to store delivery addresses
+  - Customized cargo types based on Хром KZ and Glass House companies in Astana
+  - Added specialized categories for stainless steel products, glass items, railings, elevators, and architectural elements
 
 ## User Preferences
 
