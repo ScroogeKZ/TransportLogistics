@@ -52,12 +52,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const requestCount = await storage.getTransportationRequestsForUser("", "all");
       const requestNumber = `REQ-${(requestCount.length + 1).toString().padStart(4, '0')}`;
 
+      console.log("Request body:", req.body);
+      
       const requestData = {
         requestNumber,
-        fromCity: req.body.originCity,
-        fromAddress: req.body.originAddress,
-        toCity: req.body.destinationCity,
-        toAddress: req.body.destinationAddress,
+        fromCity: req.body.fromCity || req.body.originCity,
+        fromAddress: req.body.fromAddress || req.body.originAddress,
+        toCity: req.body.toCity || req.body.destinationCity,
+        toAddress: req.body.toAddress || req.body.destinationAddress,
         cargoType: req.body.cargoType,
         weight: req.body.cargoWeight?.toString(),
         width: req.body.cargoWidth?.toString(),
@@ -69,6 +71,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdById: userId,
         status: "created",
       };
+      
+      console.log("Request data:", requestData);
 
 
 
