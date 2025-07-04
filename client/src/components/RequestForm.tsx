@@ -69,18 +69,17 @@ export default function RequestForm() {
   const createRequestMutation = useMutation({
     mutationFn: async (data: any) => {
       const payload = {
-        cargo_type: data.cargoType,
-        cargo_weight: parseFloat(data.weight),
-        pickup_location: data.fromCity,
-        pickup_address: data.fromAddress, 
-        delivery_location: data.toCity,
-        delivery_address: data.toAddress,
-        pickup_date: new Date().toISOString().split('T')[0], // Today's date
-        transport_type: data.transportType,
+        fromCity: data.fromCity,
+        fromAddress: data.fromAddress,
+        toCity: data.toCity,
+        toAddress: data.toAddress,
+        cargoType: data.cargoType,
+        weight: data.weight,
+        description: data.description,
+        estimatedCost: data.estimatedCost,
+        transportType: data.transportType,
+        urgency: data.urgency,
         carrier: data.carrier,
-        urgency_level: data.urgency,
-        special_requirements: data.description,
-        estimated_cost: data.estimatedCost ? parseFloat(data.estimatedCost) : null,
       };
       return await apiRequest("POST", "/api/transportation-requests", payload);
     },
