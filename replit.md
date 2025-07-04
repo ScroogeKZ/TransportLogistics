@@ -141,6 +141,9 @@ Changelog:
   - Customized cargo types based on Хром KZ and Glass House companies in Astana
   - Added specialized categories for stainless steel products, glass items, railings, elevators, and architectural elements
   - Added cargo dimensions fields (width, length, height) with metric units
+  - Redesigned requests list page with modern card-based layout and functional edit capabilities
+  - Implemented comprehensive edit dialog with all form fields and proper validation
+  - Added status filtering, approval/rejection workflows, and role-based permissions
 
 ## User Preferences
 
