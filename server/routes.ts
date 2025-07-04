@@ -54,10 +54,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const requestData = {
         requestNumber,
-        ...req.body,
+        fromCity: req.body.originCity,
+        fromAddress: req.body.originAddress,
+        toCity: req.body.destinationCity,
+        toAddress: req.body.destinationAddress,
+        cargoType: req.body.cargoType,
+        weight: req.body.cargoWeight?.toString(),
+        width: req.body.cargoWidth?.toString(),
+        length: req.body.cargoLength?.toString(),
+        height: req.body.cargoHeight?.toString(),
+        description: req.body.notes,
+        transportType: req.body.transportType,
+        urgency: req.body.urgencyLevel,
         createdById: userId,
         status: "created",
       };
+
+
 
       const request = await storage.createTransportationRequest(requestData);
       
@@ -201,7 +214,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = req.user;
       
-      if (!user || user.role !== "генеральный") {
+      if (!user || (user.role !== "генеральный директор" && user.role !== "супер_админ")) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -217,7 +230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = req.user;
       
-      if (!user || user.role !== "генеральный") {
+      if (!user || (user.role !== "генеральный директор" && user.role !== "супер_админ")) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -349,21 +362,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
       
-      console.log("User trying to access /api/users:", { userId, userRole: user?.role, roleLength: user?.role?.length });
-      console.log("Role comparison:", { 
-        userRole: user?.role, 
-        isGeneral: user?.role === "генеральный", 
-        isSuper: user?.role === "супер_юзер",
-        includes: ["генеральный", "супер_юзер"].includes(user?.role || "")
-      });
-      
-      // Allow access for генеральный and супер_юзер roles
-      const allowedRoles = ["генеральный", "супер_юзер"];
+      // Allow access for генеральный директор and супер_админ roles
+      const allowedRoles = ["генеральный директор", "супер_админ"];
       const hasAccess = user && allowedRoles.some(role => user.role === role);
       
       if (!hasAccess) {
-        console.log("Access denied for user:", { userId, userRole: user?.role });
-        return res.status(403).json({ message: "Access denied", userRole: user?.role });
+        return res.status(403).json({ message: "Access denied" });
       }
 
       const users = await storage.getAllUsers();
@@ -453,8 +457,8 @@ function checkEditPermission(
   requestCreatedById: string,
   userId: string
 ): boolean {
-  // Генеральный директор and супер_юзер can edit everything
-  if (userRole === "генеральный" || userRole === "супер_юзер") return true;
+  // Генеральный директор and супер_админ can edit everything
+  if (userRole === "генеральный директор" || userRole === "супер_админ") return true;
 
   // Прораб can only edit their own requests if still in created status
   if (userRole === "прораб") {
