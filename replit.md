@@ -152,6 +152,12 @@ Changelog:
   - Added status filtering, approval/rejection workflows, and role-based permissions
   - Applied modern UI design with gradients, backdrop blur effects, animations, and visual status indicators
   - Enhanced user experience with interactive elements, hover effects, and responsive layout
+- July 4, 2025. Super User role configuration:
+  - Configured супер_юзер role with full system access to all pages and features
+  - Added Admin Panel page accessible only to супер_юзер role
+  - Extended navigation permissions to show all system features for супер_юзер
+  - Updated API permissions to allow супер_юзер access to user management functions
+  - Assigned супер_юзер role to nurbek@creativegroup.kz for comprehensive system administration
 
 ## User Preferences
 
