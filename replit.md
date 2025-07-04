@@ -130,6 +130,14 @@ Changelog:
   - Session-based authentication using PostgreSQL storage
   - Role assignment restricted to General Director only
   - New users default to "прораб" role during registration
+- July 4, 2025. Migration to Replit environment completed:
+  - Successfully migrated from Replit Agent to standard Replit environment
+  - Database setup and schema migrations completed
+  - Session management fixed and stabilized
+- July 4, 2025. Enhanced transportation request form:
+  - Added destination address field alongside destination city selection
+  - Expanded city list to include 20 major Kazakhstan cities with multilingual support
+  - Updated database schema to store delivery addresses
 
 ## User Preferences
 
