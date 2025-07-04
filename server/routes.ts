@@ -201,7 +201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = req.user;
       
-      if (!user || user.role !== "генеральный") {
+      if (!user || !["генеральный", "супер_админ"].includes(user.role)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -217,7 +217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = req.user;
       
-      if (!user || user.role !== "генеральный") {
+      if (!user || !["генеральный", "супер_админ"].includes(user.role)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
