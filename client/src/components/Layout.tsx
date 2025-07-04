@@ -18,6 +18,7 @@ import {
   Users,
   Download,
   LogOut,
+  Shield,
   Building2,
   Route,
   Calculator,
@@ -60,41 +61,62 @@ export default function Layout({ children }: LayoutProps) {
       href: "/carriers",
       icon: Building2,
       current: location === "/carriers",
+<<<<<<< HEAD
       roles: ["логист", "руководитель", "финансовый", "генеральный", "супер_админ", "супер_юзер"],
+=======
+      roles: ["логист", "руководитель", "финансовый", "генеральный директор", "супер_админ"],
+>>>>>>> 9b226f612a9b6b5021256c06ca9f32b0294e362c
     },
     {
       name: "Маршруты",
       href: "/routes",
       icon: Route,
       current: location === "/routes",
+<<<<<<< HEAD
       roles: ["логист", "руководитель", "финансовый", "генеральный", "супер_админ", "супер_юзер"],
+=======
+      roles: ["логист", "руководитель", "финансовый", "генеральный директор", "супер_админ"],
+>>>>>>> 9b226f612a9b6b5021256c06ca9f32b0294e362c
     },
     {
       name: "Калькулятор",
       href: "/calculator",
       icon: Calculator,
       current: location === "/calculator",
+<<<<<<< HEAD
       roles: ["логист", "руководитель", "финансовый", "генеральный", "супер_админ", "супер_юзер"],
+=======
+      roles: ["логист", "руководитель", "финансовый", "генеральный директор", "супер_админ"],
+>>>>>>> 9b226f612a9b6b5021256c06ca9f32b0294e362c
     },
     {
       name: "Отслеживание",
       href: "/tracking",
       icon: MapPin,
       current: location === "/tracking",
+<<<<<<< HEAD
       roles: ["логист", "руководитель", "финансовый", "генеральный", "супер_админ", "супер_юзер"],
+=======
+      roles: ["логист", "руководитель", "финансовый", "генеральный директор", "супер_админ"],
+>>>>>>> 9b226f612a9b6b5021256c06ca9f32b0294e362c
     },
     {
       name: t("reports"),
       href: "/reports",
       icon: FileText,
       current: location === "/reports",
+<<<<<<< HEAD
       roles: ["руководитель", "финансовый", "генеральный", "супер_админ", "супер_юзер"],
+=======
+      roles: ["руководитель", "финансовый", "генеральный директор", "супер_админ"],
+>>>>>>> 9b226f612a9b6b5021256c06ca9f32b0294e362c
     },
     {
       name: t("user_management"),
       href: "/users",
       icon: Users,
       current: location === "/users",
+<<<<<<< HEAD
       roles: ["генеральный", "супер_админ", "супер_юзер"],
     },
     {
@@ -103,6 +125,16 @@ export default function Layout({ children }: LayoutProps) {
       icon: Users,
       current: location === "/admin",
       roles: ["супер_юзер"],
+=======
+      roles: ["генеральный директор", "супер_админ"],
+    },
+    {
+      name: "БОГ АДМИН",
+      href: "/super-admin",
+      icon: Shield,
+      current: location === "/super-admin",
+      roles: ["супер_админ"],
+>>>>>>> 9b226f612a9b6b5021256c06ca9f32b0294e362c
     },
   ];
 

@@ -116,12 +116,14 @@ export class DatabaseStorage implements IStorage {
     const countResult = await db.select({ count: count() }).from(transportationRequests);
     const requestNumber = `TR-${year}-${String(countResult[0].count + 1).padStart(3, '0')}`;
 
+    const requestData = {
+      ...request,
+      requestNumber,
+    };
+
     const [newRequest] = await db
       .insert(transportationRequests)
-      .values({
-        ...request,
-        requestNumber,
-      })
+      .values(requestData)
       .returning();
 
     return newRequest;
