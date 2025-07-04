@@ -52,7 +52,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const requestCount = await storage.getTransportationRequestsForUser("", "all");
       const requestNumber = `REQ-${(requestCount.length + 1).toString().padStart(4, '0')}`;
 
-      console.log("Request body:", req.body);
+
+      
+      // Parse dimensions if provided as a string
+      let width, length, height;
+      if (req.body.dimensions) {
+        const dimensionsParts = req.body.dimensions.split('x');
+        if (dimensionsParts.length === 3) {
+          width = dimensionsParts[0].trim();
+          length = dimensionsParts[1].trim();
+          height = dimensionsParts[2].trim();
+        }
+      }
       
       const requestData = {
         requestNumber,
@@ -61,18 +72,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         toCity: req.body.toCity || req.body.destinationCity,
         toAddress: req.body.toAddress || req.body.destinationAddress,
         cargoType: req.body.cargoType,
-        weight: req.body.cargoWeight?.toString(),
-        width: req.body.cargoWidth?.toString(),
-        length: req.body.cargoLength?.toString(),
-        height: req.body.cargoHeight?.toString(),
-        description: req.body.notes,
-        transportType: req.body.transportType,
-        urgency: req.body.urgencyLevel,
+        weight: req.body.weight || req.body.cargoWeight?.toString() || "0",
+        width: width || req.body.width || req.body.cargoWidth?.toString() || "0",
+        length: length || req.body.length || req.body.cargoLength?.toString() || "0",
+        height: height || req.body.height || req.body.cargoHeight?.toString() || "0",
+        description: req.body.description || req.body.notes || "",
+        transportType: req.body.transportType || "auto",
+        urgency: req.body.urgency || req.body.urgencyLevel || "normal",
         createdById: userId,
         status: "created",
       };
-      
-      console.log("Request data:", requestData);
+
 
 
 
@@ -213,9 +223,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-<<<<<<< HEAD
-
-=======
   // User management routes
   app.get("/api/users", requireAuth, async (req: any, res) => {
     try {
@@ -251,7 +258,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to update user" });
     }
   });
->>>>>>> 9b226f612a9b6b5021256c06ca9f32b0294e362c
 
   // Carrier management routes
   app.get("/api/carriers", requireAuth, async (req: any, res) => {

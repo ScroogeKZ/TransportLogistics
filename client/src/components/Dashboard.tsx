@@ -2,29 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Truck, DollarSign, Clock, Calculator } from "lucide-react";
-import { Line, Doughnut } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from "chart.js";
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
+import { ResponsiveCard } from "./ResponsiveCard";
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -33,269 +11,149 @@ export default function Dashboard() {
     queryKey: ["/api/dashboard/stats"],
   });
 
-  const { data: monthlyStats, isLoading: monthlyLoading } = useQuery({
-    queryKey: ["/api/dashboard/monthly-stats"],
-  });
-
-  const { data: statusStats, isLoading: statusLoading } = useQuery({
-    queryKey: ["/api/dashboard/status-stats"],
-  });
-
   const { data: recentRequests, isLoading: requestsLoading } = useQuery({
     queryKey: ["/api/transportation-requests"],
   });
 
-  if (statsLoading || monthlyLoading || statusLoading || requestsLoading) {
-    return <div>Loading...</div>;
+  if (statsLoading || requestsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-sm text-gray-600">Загрузка...</p>
+        </div>
+      </div>
+    );
   }
 
-  const lineChartData = {
-    labels: monthlyStats?.map((item: any) => item.month) || [],
-    datasets: [
-      {
-        label: t("total_transportations"),
-        data: monthlyStats?.map((item: any) => item.count) || [],
-        borderColor: "hsl(207, 90%, 54%)",
-        backgroundColor: "hsla(207, 90%, 54%, 0.1)",
-        tension: 0.4,
-        fill: true,
-      },
-    ],
-  };
-
-  const doughnutChartData = {
-    labels: statusStats?.map((item: any) => item.status) || [],
-    datasets: [
-      {
-        data: statusStats?.map((item: any) => item.count) || [],
-        backgroundColor: [
-          "hsl(142, 76%, 36%)", // Green for approved
-          "hsl(207, 90%, 54%)", // Blue for in progress
-          "hsl(32, 95%, 44%)", // Orange for waiting
-          "hsl(0, 84%, 60%)", // Red for rejected
-        ],
-        borderWidth: 0,
-      },
-    ],
-  };
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: "rgba(0, 0, 0, 0.05)",
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-    },
-  };
-
-  const doughnutOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "bottom" as const,
-        labels: {
-          usePointStyle: true,
-          padding: 20,
-        },
-      },
-    },
-  };
-
   return (
-    <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">
-                  {t("total_transportations")}
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats?.totalTransportations || 0}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-primary bg-opacity-10 rounded-lg flex items-center justify-center">
-                <Truck className="text-primary text-xl" />
-              </div>
+    <div className="space-y-6 p-4 sm:p-6">
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <ResponsiveCard>
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm text-gray-600 truncate">
+                {t("total_transportations")}
+              </p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
+                {(stats as any)?.totalTransportations || 0}
+              </p>
             </div>
-            <div className="mt-4 flex items-center">
-              <span className="text-sm text-green-600">+12%</span>
-              <span className="text-sm text-gray-600 ml-2">с прошлого месяца</span>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary bg-opacity-10 rounded-lg flex items-center justify-center ml-3">
+              <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </ResponsiveCard>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">{t("total_expenses")}</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  ₸ {stats?.totalExpenses?.toLocaleString() || 0}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="text-green-600 text-xl" />
-              </div>
+        <ResponsiveCard>
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm text-gray-600 truncate">{t("total_expenses")}</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
+                ₸ {(stats as any)?.totalExpenses?.toLocaleString() || 0}
+              </p>
             </div>
-            <div className="mt-4 flex items-center">
-              <span className="text-sm text-green-600">+8%</span>
-              <span className="text-sm text-gray-600 ml-2">с прошлого месяца</span>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center ml-3">
+              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </ResponsiveCard>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">{t("active_requests")}</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats?.activeRequests || 0}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <Clock className="text-orange-600 text-xl" />
-              </div>
+        <ResponsiveCard>
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm text-gray-600 truncate">{t("active_requests")}</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
+                {(stats as any)?.activeRequests || 0}
+              </p>
             </div>
-            <div className="mt-4 flex items-center">
-              <span className="text-sm text-orange-600">3 ожидают</span>
-              <span className="text-sm text-gray-600 ml-2">одобрения</span>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-lg flex items-center justify-center ml-3">
+              <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </ResponsiveCard>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">{t("average_cost")}</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  ₸ {stats?.averageCost?.toLocaleString() || 0}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Calculator className="text-gray-600 text-xl" />
-              </div>
+        <ResponsiveCard>
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm text-gray-600 truncate">{t("average_cost")}</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
+                ₸ {(stats as any)?.averageCost?.toLocaleString() || 0}
+              </p>
             </div>
-            <div className="mt-4 flex items-center">
-              <span className="text-sm text-red-600">-5%</span>
-              <span className="text-sm text-gray-600 ml-2">с прошлого месяца</span>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center ml-3">
+              <Calculator className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
             </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("transportations_by_month")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div style={{ height: "300px" }}>
-              <Line data={lineChartData} options={chartOptions} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("request_status")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div style={{ height: "300px" }}>
-              <Doughnut data={doughnutChartData} options={doughnutOptions} />
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </ResponsiveCard>
       </div>
 
       {/* Recent Requests */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("recent_requests")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ID
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Направление
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Груз
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Статус
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Стоимость
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Дата
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {recentRequests?.slice(0, 5).map((request: any) => (
-                  <tr key={request.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {request.requestNumber}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {request.fromCity} → {request.toCity}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {request.cargoType}, {request.weight} тонн
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          request.status === "approved"
-                            ? "bg-green-100 text-green-800"
-                            : request.status === "rejected"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {t(request.status)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ₸ {request.estimatedCost?.toLocaleString() || "—"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(request.createdAt).toLocaleDateString()}
-                    </td>
+      <ResponsiveCard title={t("recent_requests")}>
+        <div className="overflow-x-auto -mx-4 sm:-mx-6">
+          <div className="inline-block min-w-full px-4 sm:px-6 align-middle">
+            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+              <table className="min-w-full divide-y divide-gray-300">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      ID
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Направление
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Груз
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Статус
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Дата
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {(recentRequests as any)?.slice(0, 5).map((request: any) => (
+                    <tr key={request.id} className="hover:bg-gray-50">
+                      <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {request.requestNumber}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div className="max-w-[120px] truncate">
+                          {request.fromCity} → {request.toCity}
+                        </div>
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div className="max-w-[100px] truncate">
+                          {request.cargoType}
+                        </div>
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            request.status === "approved"
+                              ? "bg-green-100 text-green-800"
+                              : request.status === "rejected"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {request.status}
+                        </span>
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(request.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </ResponsiveCard>
     </div>
   );
 }
