@@ -1,0 +1,47 @@
+# Пример файла переменных для Terraform
+# Скопируйте в terraform.tfvars и заполните своими значениями
+
+# Yandex Cloud конфигурация
+yandex_cloud_id  = "your-cloud-id"
+yandex_folder_id = "your-folder-id"
+yandex_zone      = "ru-central1-a"
+
+# Проект
+project_name = "transport-registry"
+environment  = "production"
+
+# База данных
+database_url = "postgresql://username:password@hostname:port/database"
+session_secret = "your-very-secure-session-secret-key-here"
+
+# Опционально: создание управляемой базы данных
+create_managed_database = false
+database_password       = "secure-db-password"
+
+# Опционально: кастомный домен
+domain_name         = "transport.yourcompany.com"
+ssl_certificate_id  = "your-certificate-id"
+
+# Ресурсы контейнера
+container_memory            = 1024
+container_cores             = 1
+container_execution_timeout = "60s"
+max_concurrent_requests     = 10
+
+# Масштабирование
+scale_policy = {
+  min_instances = 1
+  max_instances = 10
+}
+
+# Мониторинг и логирование
+enable_logging             = true
+log_group_retention_period = 7
+monitoring_enabled         = true
+
+# Резервное копирование
+backup_enabled        = true
+backup_retention_days = 7
+
+# Безопасность
+allowed_ips = ["0.0.0.0/0"]  # Ограничьте доступ по IP при необходимости
